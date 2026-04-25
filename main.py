@@ -1,8 +1,14 @@
 import requests
 import time
+import smtplib
+from email.mime.text import MIMEText
 from datetime import datetime
 
 RECIPIENTS = ["audi0505@hotmail.com", "ken.fujiwara.sk@nttdocomo.com"]
+
+# === Gmail設定（後で変更してください）===
+GMAIL_ADDRESS = "あなたのGmailアドレス@gmail.com"
+GMAIL_APP_PASSWORD = "ここにGmailアプリパスワードを入力"   # ← 必須
 
 def extract_prefectures(text):
     keywords = ["避難指示", "緊急安全確保", "高齢者等避難"]
@@ -18,13 +24,21 @@ def extract_prefectures(text):
                     found.append(p)
     return found if found else ["該当地域あり（詳細確認）"]
 
-def send_email(subject, body):
-    # ここは後で本格メール送信に変更可能
-    print(f"\n=== メール送信 ===")
-    print(f"To: {', '.join(RECIPIENTS)}")
-    print(f"件名: {subject}")
-    print(f"本文:\n{body}")
-    print("==================\n")
+def send_real_email(subject, body):
+    try:
+        msg = MIMEText(body, "plain", "utf-8")
+        msg["Subject"] = subject
+        msg["From"] = GMAIL_ADDRESS
+        msg["To"] = ", ".join(RECIPIENTS)
+
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+        server.sendmail(GMAIL_ADDRESS, RECIPIENTS, msg.as_string())
+        server.quit()
+        print("✅ メールを送信しました！")
+    except Exception as e:
+        print("メール送信エラー:", e)
 
 def check_alert():
     try:
@@ -43,8 +57,8 @@ def check_alert():
 
         if has_alert:
             subject = "【緊急】避難指示が発令されました"
-            body = f"対象地域: {prefs_text}\n\n検知時刻: {now}\n詳細: {url}\n\n※Yahoo!防災速報アプリでも確認してください。"
-            send_email(subject, body)
+            body = f"対象地域: {prefs_text}\n\n検知時刻: {now}\n詳細ページ: {url}\n\n※これは自動監視ツールです。\n必ずYahoo!防災速報アプリで確認してください。"
+            send_real_email(subject, body)
 
     except Exception as e:
         print("エラー:", e)
