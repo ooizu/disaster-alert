@@ -6,10 +6,10 @@ from datetime import datetime
 
 RECIPIENTS = ["audi0505@hotmail.com", "ken.fujiwara.sk@nttdocomo.com"]
 
-# ================== Gmail設定（必ず変更）==================
-GMAIL_ADDRESS = "あなたのGmailアドレス@gmail.com"          # ← ここを変更
-GMAIL_APP_PASSWORD = "ここにアプリパスワードを入力"       # ← 必須！
-# =======================================================
+# ================== Gmail設定 ==================
+GMAIL_ADDRESS = "ooizu55@gmail.com"                    # ← 必要なら変更
+GMAIL_APP_PASSWORD = "cioa pdty gzsc bcen"            # ← あなたのアプリパスワード
+# ===============================================
 
 def extract_prefectures(text):
     keywords = ["避難指示", "緊急安全確保", "高齢者等避難"]
@@ -38,8 +38,10 @@ def send_email(subject, body):
         server.sendmail(GMAIL_ADDRESS, RECIPIENTS, msg.as_string())
         server.quit()
         print("✅ メールを送信しました！")
+        return True
     except Exception as e:
         print("❌ メール送信エラー:", e)
+        return False
 
 def check_alert():
     try:
