@@ -1,7 +1,6 @@
 import requests
-import json
-from datetime import datetime, timedelta
-import os
+import time
+from datetime import datetime
 
 RECIPIENTS = ["audi0505@hotmail.com", "ken.fujiwara.sk@nttdocomo.com"]
 
@@ -10,29 +9,28 @@ def extract_prefectures(text):
     found = [p for p in prefs if p in text]
     return found[:6] if found else ["該当地域あり"]
 
-def main():
+def check_alert():
     try:
         url = "https://crisis.yahoo.co.jp/evacuation/"
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        headers = {"User-Agent": "Mozilla/5.0"}
         r = requests.get(url, headers=headers, timeout=15)
         text = r.text
 
-        has_alert = any(k in text for k in ["避難指示", "緊急安全確保", "高齢者等避難"])
-
+        has_alert = any(k in text for k in ["避難指示", "緊急安全確保"])
         prefs = extract_prefectures(text)
         prefs_text = "、".join(prefs)
 
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{now}] チェック完了 → 避難指示: {has_alert} | 地域: {prefs_text}")
 
-        print(f"[{now}] 避難指示検知: {has_alert} | 対象: {prefs_text}")
-
-        # ここは後でメール送信に変更します
         if has_alert:
-            print("【緊急】避難指示が発令されています！")
-            print(f"対象地域: {prefs_text}")
-
+            print("【緊急】避難指示が検知されました！")
+            # ここに後でメール送信を追加します
     except Exception as e:
         print("エラー:", e)
 
 if __name__ == "__main__":
-    main()
+    print("避難指示監視ツール起動...")
+    while True:
+        check_alert()
+        time.sleep(600)  # 10分ごとに実行
